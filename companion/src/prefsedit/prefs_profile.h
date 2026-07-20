@@ -38,14 +38,12 @@ class PrefsProfilePanel : public PrefsPanel
     PrefsProfilePanel(QWidget * parent);
     virtual ~PrefsProfilePanel();
 
-    virtual bool save() override;
+    virtual void save() override;
     virtual void update() override;
 
   private:
     Ui::PrefsProfile * ui;
-    FilteredItemModelFactory *panelItemModels;
 
-    void populateFirmwareOptions(const Firmware *);
-    Firmware * getBaseFirmware() const;
-    Firmware * getFirmwareVariant() const;
+    QString getLanguage();
+    QStringList languageList();
 };
