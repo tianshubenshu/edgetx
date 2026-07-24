@@ -32,6 +32,7 @@
 #include "autofileselectbutton.h"
 #include "autodirectoryselectbutton.h"
 #include "autohexspinbox.h"
+#include "autoimage.h"
 #include "autolabel.h"
 #include "autolineedit.h"
 #include "autoprecisioncombobox.h"
