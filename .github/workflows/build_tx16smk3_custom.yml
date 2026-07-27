@@ -1,0 +1,42 @@
+name: Build TX16S MK3 custom firmware
+
+on:
+  push:
+    branches:
+      - tx16smk3-28-led-rings
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build TX16S MK3
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/edgetx/edgetx-dev:latest
+      volumes:
+        - ${{ github.workspace }}:/src
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - name: Build firmware
+        env:
+          FLAVOR: tx16smk3
+          CMAKE_BUILD_PARALLEL_LEVEL: 4
+        run: ./tools/build-gh.sh
+
+      - name: Upload firmware
+        uses: actions/upload-artifact@v7
+        with:
+          name: tx16smk3-28-led-rings
+          path: |
+            fw.json
+            LICENSE
+            *.uf2
+          retention-days: 15
+          if-no-files-found: error
