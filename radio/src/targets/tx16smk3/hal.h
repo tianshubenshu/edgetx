@@ -455,9 +455,9 @@ USART6: INTMODULE_USART
 #define HAPTIC_TIMER_COMPARE_VALUE      HAPTIC_GPIO_TIMER->CCR2
 
 // LED Strip
-#define LED_STRIP_LENGTH                  26  // 6POS + 2 rings of 10
+#define LED_STRIP_LENGTH                  62  // 6POS + 2 rings of 28
 #define BLING_LED_STRIP_START             6
-#define BLING_LED_STRIP_LENGTH            20
+#define BLING_LED_STRIP_LENGTH            56
 #define CFS_LED_STRIP_START               0
 #define CFS_LED_STRIP_LENGTH              6
 #define CFS_LEDS_PER_SWITCH               1
