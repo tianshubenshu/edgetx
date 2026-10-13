@@ -41,6 +41,12 @@ jobs:
           set -o pipefail
           python3 tools/extend-cn-fonts.py --font-converter /tmp/edgetx-font-conv/node_modules/.bin/lv_font_conv | tee font-extension.log
           tar -czf extended-cn-fonts.tar.gz radio/src/fonts/lvgl/std/lv_font_cn_*.c
+      - name: Generate dictionary from available glyphs
+        shell: bash
+        run: |
+          set -o pipefail
+          python3 -m pip install --disable-pip-version-check pypinyin==0.53.0
+          python3 tools/generate-pinyin-dictionary.py | tee dictionary-size.log
       - name: Build TX16S firmware
         env:
           FLAVOR: tx16s
@@ -52,6 +58,17 @@ jobs:
           set -o pipefail
           ./tools/build-gh.sh 2>&1 | tee size-build.log
           stat -c '%n %s bytes' tx16s-*.bin
+      - name: Check Flash headroom
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          files = list(Path('.').glob('tx16s-*.bin'))
+          assert len(files) == 1, 'Expected exactly one TX16S firmware'
+          size = files[0].stat().st_size
+          free = 2 * 1024 * 1024 - size
+          print(f'Firmware bytes: {size}; Flash headroom: {free} bytes ({free / 1024:.2f} KiB)')
+          assert free >= 24 * 1024, 'Flash headroom below the 24 KiB development reserve'
+          PY
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
@@ -63,5 +80,7 @@ jobs:
             font-extension.log
             size-build.log
             extended-cn-fonts.tar.gz
+            dictionary-size.log
+            radio/src/gui/colorlcd/libui/pinyin_dictionary.h
           if-no-files-found: error
           retention-days: 15

@@ -21,6 +21,7 @@
 #include "textedit.h"
 #include "pinyin_dictionary.h"
 #include "fonts.h"
+#include <cstdio>
 
 constexpr coord_t PINYIN_PANEL_HEIGHT = 70;
 
@@ -61,6 +62,21 @@ TextKeyboard::TextKeyboard() : Keyboard(KEYBOARD_HEIGHT)
   pinyinStatus = lv_label_create(pinyinPanel);
   lv_obj_set_pos(pinyinStatus, 215, 5);
   lv_label_set_text(pinyinStatus, "English");
+
+  previousPage = lv_btn_create(pinyinPanel);
+  nextPage = lv_btn_create(pinyinPanel);
+  for (unsigned i = 0; i < 2; ++i) {
+    auto button = i == 0 ? previousPage : nextPage;
+    lv_obj_set_pos(button, LCD_W - 92 + i * 46, 0);
+    lv_obj_set_size(button, 40, 30);
+    lv_obj_clear_flag(button, LV_OBJ_FLAG_CLICK_FOCUSABLE);
+    lv_group_remove_obj(button);
+    auto label = lv_label_create(button);
+    lv_label_set_text(label, i == 0 ? "<" : ">");
+    lv_obj_center(label);
+    lv_obj_add_event_cb(button, pinyinPageEvent, LV_EVENT_CLICKED, this);
+    lv_obj_add_flag(button, LV_OBJ_FLAG_HIDDEN);
+  }
 
   for (unsigned i = 0; i < 5; ++i) {
     candidateButtons[i] = lv_btn_create(pinyinPanel);
@@ -117,6 +133,20 @@ void TextKeyboard::refreshCandidates()
     syllable[i] = input[i] >= 'A' && input[i] <= 'Z'
                     ? input[i] + ('a' - 'A') : input[i];
   const char* chars = pinyinMode ? pinyinCandidates(syllable) : "";
+  candidateCount = strlen(chars) / 3;
+  if (candidateOffset >= candidateCount) candidateOffset = 0;
+  chars += candidateOffset * 3;
+  if (pinyinMode && candidateCount > 5) {
+    lv_obj_clear_flag(previousPage, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_clear_flag(nextPage, LV_OBJ_FLAG_HIDDEN);
+    if (candidateOffset == 0) lv_obj_add_state(previousPage, LV_STATE_DISABLED);
+    else lv_obj_clear_state(previousPage, LV_STATE_DISABLED);
+    if (candidateOffset + 5 >= candidateCount) lv_obj_add_state(nextPage, LV_STATE_DISABLED);
+    else lv_obj_clear_state(nextPage, LV_STATE_DISABLED);
+  } else {
+    lv_obj_add_flag(previousPage, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_flag(nextPage, LV_OBJ_FLAG_HIDDEN);
+  }
   for (unsigned i = 0; i < 5; ++i) {
     candidates[i][0] = '\0';
     if (*chars) {
@@ -130,10 +160,18 @@ void TextKeyboard::refreshCandidates()
       lv_obj_add_flag(candidateButtons[i], LV_OBJ_FLAG_HIDDEN);
     }
   }
-  if (pinyinMode)
-    lv_label_set_text(pinyinStatus,
-      *lv_textarea_get_text(pinyinInput) && !candidates[0][0]
-        ? "No match" : "Pinyin");
+  if (pinyinMode) {
+    if (candidateCount > 5) {
+      char status[24];
+      snprintf(status, sizeof(status), "Pinyin %u/%u",
+               candidateOffset / 5 + 1, (candidateCount + 4) / 5);
+      lv_label_set_text(pinyinStatus, status);
+    } else {
+      lv_label_set_text(pinyinStatus,
+        *lv_textarea_get_text(pinyinInput) && !candidates[0][0]
+          ? "No match" : "Pinyin");
+    }
+  }
 }
 
 void TextKeyboard::commitCandidate(unsigned index)
@@ -155,7 +193,21 @@ void TextKeyboard::pinyinModeEvent(lv_event_t* event)
 
 void TextKeyboard::pinyinTextEvent(lv_event_t* event)
 {
-  static_cast<TextKeyboard*>(lv_event_get_user_data(event))->refreshCandidates();
+  auto self = static_cast<TextKeyboard*>(lv_event_get_user_data(event));
+  self->candidateOffset = 0;
+  self->refreshCandidates();
+}
+
+void TextKeyboard::pinyinPageEvent(lv_event_t* event)
+{
+  auto self = static_cast<TextKeyboard*>(lv_event_get_user_data(event));
+  if (!self->pinyinMode) return;
+  if (lv_event_get_target(event) == self->previousPage && self->candidateOffset >= 5)
+    self->candidateOffset -= 5;
+  else if (lv_event_get_target(event) == self->nextPage &&
+           self->candidateOffset + 5 < self->candidateCount)
+    self->candidateOffset += 5;
+  self->refreshCandidates();
 }
 
 void TextKeyboard::pinyinCandidateEvent(lv_event_t* event)

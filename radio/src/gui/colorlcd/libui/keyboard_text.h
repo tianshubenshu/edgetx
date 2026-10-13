@@ -77,11 +77,16 @@ class TextKeyboard : public Keyboard
   static void pinyinModeEvent(lv_event_t* event);
   static void pinyinTextEvent(lv_event_t* event);
   static void pinyinCandidateEvent(lv_event_t* event);
+  static void pinyinPageEvent(lv_event_t* event);
 
   lv_obj_t* pinyinPanel = nullptr;
   lv_obj_t* pinyinInput = nullptr;
   lv_obj_t* modeLabel = nullptr;
   lv_obj_t* pinyinStatus = nullptr;
+  lv_obj_t* previousPage = nullptr;
+  lv_obj_t* nextPage = nullptr;
+  unsigned candidateOffset = 0;
+  unsigned candidateCount = 0;
   lv_obj_t* candidateButtons[5] = {};
   lv_obj_t* candidateLabels[5] = {};
   lv_obj_t* nameTextArea = nullptr;
