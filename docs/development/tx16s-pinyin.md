@@ -45,3 +45,26 @@ insertion, deleting Chinese characters, the 15-byte boundary, closing/reopening
 the keyboard, other text fields, and model-name save/reload.
 Keep existing LED changes on their current branch; bring them into this branch
 separately after reviewing their commits.
+
+## Built-in font compaction
+
+Before building this branch manually, run:
+
+```sh
+python3 tools/compact-cn-fonts.py
+```
+
+The custom firmware workflow runs this automatically. It repacks only the
+standard-display 24px CN regular and 32px CN bold fonts from 4bpp (16 gray
+levels) to 2bpp (4 gray levels), retaining every glyph, advance, bearing,
+Unicode map and font size. The 16px candidate/menu font remains unchanged.
+Large Chinese text loses some edge smoothing; inspect legibility in the
+simulator and on the display before relying on the build.
+
+The checked-in original font arrays remain the reproducible source; the
+script overwrites their build-workspace copies before compilation. It uses
+the repository's bundled LZ4 code, checks the v2.12.4 descriptor layout,
+verifies every transformed pixel and unchanged geometry/map, then verifies
+the compressed data round-trip. Repeating it on 2bpp output is a no-op.
+There is no new runtime loader or SD font access; fonts remain built into
+the firmware and use the existing decompressor, with smaller RAM buffers.
