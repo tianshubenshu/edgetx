@@ -1,0 +1,43 @@
+name: TX16S v2.12.4 size comparison
+on:
+  push:
+    branches: [tx16s-pinyin]
+    paths: ['.github/workflows/tx16s-size.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  baseline:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [EN, CN]
+    container:
+      image: ghcr.io/edgetx/edgetx-dev:2.12
+      volumes:
+        - ${{ github.workspace }}:/src
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: def35ad324896b45d6607d4778536b1bc5360d20
+          submodules: recursive
+      - name: Build baseline
+        shell: bash
+        env:
+          FLAVOR: tx16s
+          EXTRA_OPTIONS: -DTRANSLATIONS=${{ matrix.language }}
+          EDGETX_VERSION_SUFFIX: pinyin
+          CMAKE_BUILD_PARALLEL_LEVEL: 4
+        run: |
+          set -o pipefail
+          ./tools/build-gh.sh 2>&1 | tee size-build.log
+          stat -c '%n %s bytes' tx16s-*.bin
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tx16s-v2.12.4-${{ matrix.language }}-size
+          path: |
+            tx16s-*.bin
+            size-build.log
+          if-no-files-found: error
+          retention-days: 15
