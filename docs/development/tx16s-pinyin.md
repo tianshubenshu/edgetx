@@ -68,15 +68,14 @@ glyphs. No runtime font-file loading is added.
 
 The firmware workflow generates a packed, built-in dictionary from every Han
 character in the verified extended standard CN font (625 distinct Han glyphs).
-It uses pinned pypinyin 0.53.0 offline, keeps the hand-selected seed candidates
+It uses pinned primary readings derived from pypinyin 0.53.0, keeps the hand-selected seed candidates
 first, and includes common alternative readings. This is coverage of the
 available glyph subset, not a complete general-purpose Chinese dictionary.
 
 Use the < and > buttons to page through five candidates at a time. Editing the
 syllable resets to page one. v represents ü. The model-name byte capacity stays
 15 bytes. The generated dictionary has no runtime heap allocation or SD access.
-For manual builds, run tools/extend-cn-fonts.py, then install pypinyin 0.53.0
-and run tools/generate-pinyin-dictionary.py before invoking CMake.
+For manual builds, run tools/extend-cn-fonts.py, then run tools/generate-pinyin-dictionary.py before invoking CMake.
 
 The CI artifact contains the actual generated header and count report; the
 checked-in header is the human-selected seed. A post-build check rejects

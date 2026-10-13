@@ -4,7 +4,6 @@ import importlib.util
 import re
 from collections import defaultdict
 from pathlib import Path
-from pypinyin import Style, lazy_pinyin
 
 ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location("font_extension", ROOT / "tools/extend-cn-fonts.py")
@@ -12,6 +11,14 @@ fonts = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(fonts)
 glyphs = fonts.c_glyphs((ROOT / "radio/src/fonts/lvgl/std/lv_font_cn_STD.c").read_text())
 characters = {chr(cp) for cp in glyphs if 0x4E00 <= cp <= 0x9FFF}
+readings = {}
+for line in (ROOT / "tools/pinyin-font-readings.tsv").read_text().splitlines():
+    if not line or line.startswith("#"):
+        continue
+    character, syllable = line.split("\t")
+    readings[character] = syllable
+if characters - readings.keys():
+    raise ValueError("Missing pinned readings for available glyphs")
 path = ROOT / "radio/src/gui/colorlcd/libui/pinyin_dictionary.h"
 seed = re.findall(r'\{"([a-z]+)", "([^"]+)"\}', path.read_text())
 if not seed:
@@ -32,7 +39,7 @@ for syllable, candidates in seed:
     for character in candidates:
         add(syllable, character)
 for character in sorted(characters, key=lambda c: (priority.get(c, 10000), ord(c))):
-    syllable = lazy_pinyin(character, style=Style.NORMAL)[0].replace("ü", "v")
+    syllable = readings[character]
     add(syllable, character)
 for syllable, candidates in {
         "hang": "行", "chong": "重", "zhang": "长", "chang": "长",
