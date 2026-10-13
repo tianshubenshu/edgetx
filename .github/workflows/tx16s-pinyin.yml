@@ -30,22 +30,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
-      - name: Compact builtin Chinese fonts
-        shell: bash
-        run: |
-          set -o pipefail
-          python3 tools/compact-cn-fonts.py | tee font-size.log
       - name: Build TX16S firmware
         env:
           FLAVOR: tx16s
           EXTRA_OPTIONS: -DTRANSLATIONS=CN
           CMAKE_BUILD_PARALLEL_LEVEL: 4
           EDGETX_VERSION_SUFFIX: pinyin
-        shell: bash
-        run: |
-          set -o pipefail
-          ./tools/build-gh.sh 2>&1 | tee size-build.log
-          stat -c '%n %s bytes' tx16s-*.bin
+        run: ./tools/build-gh.sh
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
@@ -54,7 +45,5 @@ jobs:
             tx16s-*.bin
             tx16s-*.uf2
             LICENSE
-            font-size.log
-            size-build.log
           if-no-files-found: error
           retention-days: 15
