@@ -49,8 +49,8 @@ separately after reviewing their commits.
 ## Aircraft-name glyph extension
 
 The original standard CN fonts contain 622 Han characters and one punctuation
-glyph. The build adds only 穿, 越 and 纸 at all six existing CN font styles/sizes,
-yielding 625 Han characters plus the original punctuation. Original glyph
+glyph. The build adds 穿, 越, 纸, 三, 四, 五 and 六 at all six existing CN font styles/sizes,
+yielding 629 Han characters plus the original punctuation. Original glyph
 bitmaps, advances, dimensions, bearings, grayscale and font metrics are verified
 unchanged; generated additions use the original bundled Noto faces at 4bpp.
 The dictionaries now offer 44 distinct candidates over 35 syllables, including
@@ -67,7 +67,7 @@ glyphs. No runtime font-file loading is added.
 ## Complete coverage of the available glyph subset
 
 The firmware workflow generates a packed, built-in dictionary from every Han
-character in the verified extended standard CN font (625 distinct Han glyphs).
+character in the verified extended standard CN font (629 distinct Han glyphs).
 It uses pinned primary readings derived from pypinyin 0.53.0, keeps the hand-selected seed candidates
 first, and includes common alternative readings. This is coverage of the
 available glyph subset, not a complete general-purpose Chinese dictionary.

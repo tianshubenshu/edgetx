@@ -256,7 +256,7 @@ def main():
     config = (root / "radio/src/gui/colorlcd/lv_conf.h").read_text()
     if not re.search(r"^#define LV_FONT_FMT_TXT_LARGE 0$", config, re.M):
         raise ValueError("Only the v2.12.4 small font descriptor layout is supported")
-    wanted = {ord(c) for c in "穿越纸"}
+    wanted = {ord(c) for c in "穿越纸三四五六"}
     with tempfile.TemporaryDirectory(prefix="edgetx-font-") as directory:
         work = Path(directory)
         lib = load_lz4(root, work, False)

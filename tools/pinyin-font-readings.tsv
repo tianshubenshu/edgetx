@@ -1,6 +1,6 @@
 # Primary readings derived from mozillazg/python-pinyin v0.53.0 pypinyin/pinyin_dict.json
 # Source blob SHA: 09a3da0f8c5d29f6447386f2c8d29805941139d2
-# Toneless; v for umlaut u. Only the 625 built-in Han glyphs.
+# Toneless; v for umlaut u. Verified readings for the extended built-in Han subset.
 一	yi
 上	shang
 下	xia
@@ -626,3 +626,7 @@
 黄	huang
 默	mo
 齐	qi
+三	san
+四	si
+五	wu
+六	liu
