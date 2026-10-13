@@ -45,6 +45,7 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
+          python3 -m ensurepip --upgrade
           python3 -m pip install --disable-pip-version-check pypinyin==0.53.0
           python3 tools/generate-pinyin-dictionary.py | tee dictionary-size.log
       - name: Build TX16S firmware
