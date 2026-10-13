@@ -42,7 +42,8 @@ class TextArea : public FormField
       lv_obj_add_event_cb(lvobj, [](lv_event_t* event) {
         auto self = static_cast<TextArea*>(lv_event_get_user_data(event));
         const char* inserted = static_cast<const char*>(lv_event_get_param(event));
-        if (strcmp(inserted, LV_SYMBOL_BACKSPACE) == 0) return;
+        // LVGL uses LV_KEY_DEL for both backward and forward deletion.
+        if (inserted[0] == LV_KEY_DEL && inserted[1] == '\0') return;
         auto object = self->getLvObj();
         if (strlen(lv_textarea_get_text(object)) + strlen(inserted) > self->length)
           lv_textarea_set_insert_replace(object, "");
