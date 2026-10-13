@@ -15,7 +15,7 @@ The prototype is enabled in CN builds and only for the model name field.
 The model name keeps the upstream 15-byte storage capacity: at most five
 three-byte Chinese characters, or a mixture of Chinese and ASCII within 15 bytes.
 An insertion that exceeds the byte capacity is rejected.
-The dictionary is deliberately small: 30 exact, toneless syllables using
+The dictionary is deliberately small: 35 exact, toneless syllables using
 characters already present in the standard CN font. It is not a full pinyin
 dictionary and has no phrase prediction or user learning.
 For example, enter fei, touch 飞, enter ji, and touch 机.
@@ -45,3 +45,21 @@ insertion, deleting Chinese characters, the 15-byte boundary, closing/reopening
 the keyboard, other text fields, and model-name save/reload.
 Keep existing LED changes on their current branch; bring them into this branch
 separately after reviewing their commits.
+
+## Aircraft-name glyph extension
+
+The original standard CN fonts contain 622 Han characters and one punctuation
+glyph. The build adds only 穿, 越 and 纸 at all six existing CN font styles/sizes,
+yielding 625 Han characters plus the original punctuation. Original glyph
+bitmaps, advances, dimensions, bearings, grayscale and font metrics are verified
+unchanged; generated additions use the original bundled Noto faces at 4bpp.
+The dictionaries now offer 44 distinct candidates over 35 syllables, including
+穿越机, 纸飞机, 固定翼 and 号. Input remains syllable-by-syllable, not phrase prediction.
+Examples such as 穿越机1号 fit the unchanged 15-byte model-name capacity.
+
+The custom firmware workflow installs lv_font_conv 1.5.3, invokes
+tools/extend-cn-fonts.py before building, then uploads the generated font sources,
+font checks and size log alongside the firmware. For a manual build, install
+that converter and run the same script before CMake. Existing checked-in font
+sources remain untouched; only their build-workspace copies receive appended
+glyphs. No runtime font-file loading is added.

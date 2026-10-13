@@ -30,13 +30,28 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned font converter
+        run: npm install --prefix /tmp/edgetx-font-conv --ignore-scripts --no-audit --no-fund lv_font_conv@1.5.3
+      - name: Append missing Chinese glyphs
+        shell: bash
+        run: |
+          set -o pipefail
+          python3 tools/extend-cn-fonts.py --font-converter /tmp/edgetx-font-conv/node_modules/.bin/lv_font_conv | tee font-extension.log
+          tar -czf extended-cn-fonts.tar.gz radio/src/fonts/lvgl/std/lv_font_cn_*.c
       - name: Build TX16S firmware
         env:
           FLAVOR: tx16s
           EXTRA_OPTIONS: -DTRANSLATIONS=CN
           CMAKE_BUILD_PARALLEL_LEVEL: 4
           EDGETX_VERSION_SUFFIX: pinyin
-        run: ./tools/build-gh.sh
+        shell: bash
+        run: |
+          set -o pipefail
+          ./tools/build-gh.sh 2>&1 | tee size-build.log
+          stat -c '%n %s bytes' tx16s-*.bin
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
@@ -45,5 +60,8 @@ jobs:
             tx16s-*.bin
             tx16s-*.uf2
             LICENSE
+            font-extension.log
+            size-build.log
+            extended-cn-fonts.tar.gz
           if-no-files-found: error
           retention-days: 15
