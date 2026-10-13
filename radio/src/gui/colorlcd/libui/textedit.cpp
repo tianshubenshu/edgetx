@@ -37,6 +37,17 @@ class TextArea : public FormField
 
     lv_textarea_set_max_length(lvobj, length);
     lv_textarea_set_placeholder_text(lvobj, "---");
+    if (value == g_model.header.name) {
+      // LVGL counts characters; the persisted name has a byte capacity.
+      lv_obj_add_event_cb(lvobj, [](lv_event_t* event) {
+        auto self = static_cast<TextArea*>(lv_event_get_user_data(event));
+        const char* inserted = static_cast<const char*>(lv_event_get_param(event));
+        if (strcmp(inserted, LV_SYMBOL_BACKSPACE) == 0) return;
+        auto object = self->getLvObj();
+        if (strlen(lv_textarea_get_text(object)) + strlen(inserted) > self->length)
+          lv_textarea_set_insert_replace(object, "");
+      }, LV_EVENT_INSERT, this);
+    }
 
     setFocusHandler([=](bool focus) {
       if (!focus && editMode) {
@@ -66,7 +77,7 @@ class TextArea : public FormField
   }
 
   void openKeyboard() {
-    TextKeyboard::open(this);
+    TextKeyboard::open(this, value == g_model.header.name ? length : 0);
   }
 
   void setCancelHandler(std::function<void(void)> handler)

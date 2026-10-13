@@ -45,7 +45,7 @@ class TextKeyboard : public Keyboard
   std::string getName() const override { return "TextKeyboard"; }
 #endif
 
-  static void open(FormField* field);
+  static void open(FormField* field, uint8_t nameByteLimit = 0);
 
  protected:
 #if defined(HARDWARE_KEYS)
@@ -69,6 +69,25 @@ class TextKeyboard : public Keyboard
   void onLongPressPGUP() override;
   void onLongPressPGDN() override;
 #endif
+
+  void configurePinyin(uint8_t byteLimit);
+  void togglePinyin();
+  void refreshCandidates();
+  void commitCandidate(unsigned index);
+  static void pinyinModeEvent(lv_event_t* event);
+  static void pinyinTextEvent(lv_event_t* event);
+  static void pinyinCandidateEvent(lv_event_t* event);
+
+  lv_obj_t* pinyinPanel = nullptr;
+  lv_obj_t* pinyinInput = nullptr;
+  lv_obj_t* modeLabel = nullptr;
+  lv_obj_t* pinyinStatus = nullptr;
+  lv_obj_t* candidateButtons[5] = {};
+  lv_obj_t* candidateLabels[5] = {};
+  lv_obj_t* nameTextArea = nullptr;
+  char candidates[5][4] = {};
+  uint8_t nameByteLimit = 0;
+  bool pinyinMode = false;
 
   static TextKeyboard* _instance;
 };
