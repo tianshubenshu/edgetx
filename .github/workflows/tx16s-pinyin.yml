@@ -1,0 +1,49 @@
+name: TX16S MkII custom firmware
+
+on:
+  push:
+    branches: [tx16s-pinyin]
+    paths:
+      - 'radio/**'
+      - 'cmake/**'
+      - 'tools/**'
+      - 'CMakeLists.txt'
+      - '.gitmodules'
+      - '.github/workflows/tx16s-pinyin.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tx16s-pinyin-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  firmware:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/edgetx/edgetx-dev:2.12
+      volumes:
+        - ${{ github.workspace }}:/src
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Build TX16S firmware
+        env:
+          FLAVOR: tx16s
+          EXTRA_OPTIONS: -DTRANSLATIONS=CN
+          CMAKE_BUILD_PARALLEL_LEVEL: 4
+          EDGETX_VERSION_SUFFIX: pinyin
+        run: ./tools/build-gh.sh
+      - name: Upload firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: tx16s-pinyin-${{ github.sha }}
+          path: |
+            tx16s-*.bin
+            tx16s-*.uf2
+            LICENSE
+          if-no-files-found: error
+          retention-days: 15
